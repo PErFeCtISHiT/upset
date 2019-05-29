@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import keras
 import loader
+from keras import backend as K
 
 fashion_mnist = keras.datasets.fashion_mnist
 class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
@@ -59,21 +60,21 @@ for i in range(1, num_layers):
     current_layer = tf.nn.relu((tf.matmul(current_layer, weight)))
     in_dimension = layer_dimension[i]
 
-# x^
-new_image = tf.maximum(tf.minimum(arg_s * current_layer + train_y, 1), -1)
-lc = -tf.reduce_mean(train_x * tf.log(tf.clip_by_value(model.output, 1e-10, 1.0)))
-lf = 0.08 * tf.reduce_mean(tf.square(new_image - train_y))
-loss = lc + lf
-
-# tf.add_to_collection('losses', loss)
-
-# total_loss = tf.add_n(tf.get_collection('losses'))
-
-train_step = tf.train.AdamOptimizer(0.001).minimize(loss)
-
-dataset_size = 50000
-
 with tf.Session() as session:
+    new_image = tf.maximum(tf.minimum(arg_s * current_layer + train_y, 1), -1)
+    session.run(model.output, feed_dict={'flatten_1_input:0': tf.get_session_handle(tf.reshape(new_image, [-1, 28, 28]))})
+    lc = -tf.reduce_mean(train_x * tf.log(tf.clip_by_value(model.output, 1e-10, 1.0)))
+    lf = 0.08 * tf.reduce_mean(tf.square(new_image - train_y))
+    loss = lc + lf
+
+    # tf.add_to_collection('losses', loss)
+
+    # total_loss = tf.add_n(tf.get_collection('losses'))
+
+    train_step = tf.train.AdamOptimizer(0.001).minimize(loss)
+
+    dataset_size = 50000
+
     init_op = tf.global_variables_initializer()
     session.run(init_op)
     steps = 5000
