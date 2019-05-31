@@ -2,7 +2,6 @@ import tensorflow as tf
 import numpy as np
 import keras
 import loader
-from keras import backend as K
 
 fashion_mnist = keras.datasets.fashion_mnist
 class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
