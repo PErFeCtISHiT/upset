@@ -75,5 +75,5 @@ for epoch in range(epochs):
                                    feed_dict={target_train_x: train_images, target_train_label: train_labels})
     accuracy = compute_accuracy(sess, target_output, train_images, train_labels)
     print("======================================================")
-    print("At the end of epoch %d, loss: %g, accuracy: %g" % (epoch, total_cross_entropy, accuracy))
+    print("At the end of epoch %d, loss: %g, accuracy: %g" % (epoch+1, total_cross_entropy, accuracy))
     print("======================================================")
