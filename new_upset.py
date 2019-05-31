@@ -10,8 +10,8 @@ def get_non_trainable_variable(input_variable, session):
 
 def compute_accuracy(session, prediction, v_xs, v_ys):
     correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(v_ys, 1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    result = sess.run(accuracy, feed_dict={target_train_x: v_xs, target_train_label: v_ys})
+    accuracy_op = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    result = session.run(accuracy_op, feed_dict={target_train_x: v_xs, target_train_label: v_ys})
     return result
 
 
