@@ -136,6 +136,7 @@ w1_n = get_non_trainable_variable(w1_t, sess)
 w2_n = get_non_trainable_variable(w2_t, sess)
 
 model = get_model(w1_n, w2_n, train_y)
+model = tf.nn.softmax(model)
 
 lc = -tf.reduce_mean(train_x * tf.log(tf.clip_by_value(model, 1e-10, 1.0)))
 lf = 0.08 * tf.reduce_mean(tf.square(new_image - train_y))
