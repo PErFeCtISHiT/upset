@@ -40,8 +40,8 @@ fashion_mnist = keras.datasets.fashion_mnist
 class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
                'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
 (train_images, train_labels), (test_images, test_labels) = loader.load_data()
-train_images = train_images / 255.0
-test_images = test_images / 255.0
+train_images = (train_images / 255.0 - 0.5) * 2
+test_images = (test_images / 255.0 - 0.5) * 2
 train_labels = sess.run(tf.one_hot(train_labels, class_num))
 test_labels = sess.run(tf.one_hot(test_labels, class_num))
 
@@ -152,7 +152,7 @@ in_dimension = layer_dimension[0]
 current_layer = tf.reshape(current_layer, [-1, 28, 28])
 
 output_layer = current_layer
-new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), 0)
+new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)
 
 w1_n = get_non_trainable_variable(w1_n)
 w2_n = get_non_trainable_variable(w2_n)
@@ -209,5 +209,5 @@ for i in range(steps):
 
         print("After %d training step(s), loss on all data is %g" % (i, total_cross_entropy))
         # W5和W6在Optimize的过程中没有变化
-        print("w5: %g", d)
-        print("w6: %g", e)
+        # print("w5: %g", d)
+        # print("w6: %g", e)
