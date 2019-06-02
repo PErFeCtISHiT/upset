@@ -2,6 +2,8 @@ import tensorflow as tf
 import numpy as np
 import keras
 import loader
+from tensorflow.examples.tutorials.mnist import input_data
+from tensorflow.python import debug as tf_debug
 
 
 def get_non_trainable_variable(input_variable, session):
@@ -30,6 +32,7 @@ def get_model(w1, w2, x):
 
 
 sess = tf.Session()
+# sess = tf_debug.LocalCLIDebugWrapperSession(sess)
 image_width = 28
 class_num = 10
 
@@ -111,35 +114,47 @@ train_x = tf.placeholder(tf.float32, shape=(None, 10), name='x-input')
 # x
 train_y = tf.placeholder(tf.float32, shape=(None, 28, 28), name='y-input')
 
-arg_s = 2
-arg_w = 0.1
+arg_s = 1
+arg_w = 0.06
 
 layer_dimension = [10, 128, 256, 512, 1024, 512, 784]
-
+layer1 = tf.Variable(tf.random_normal([10, 128], stddev=1, seed=1))
+layer2 = tf.Variable(tf.random_normal([128, 256], stddev=1, seed=1))
+layer3 = tf.Variable(tf.random_normal([256, 512], stddev=1, seed=1))
+layer4 = tf.Variable(tf.random_normal([512, 1024], stddev=1, seed=1))
+layer5 = tf.Variable(tf.random_normal([1024, 512], stddev=1, seed=1))
+layer6 = tf.Variable(tf.random_normal([512, 784], stddev=1, seed=1))
 num_layers = len(layer_dimension)
 current_layer = train_x
 
+current_layer = tf.nn.relu((tf.matmul(current_layer, layer1)))
+current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer2)))
+current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer3)))
+current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer4)))
+current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer5)))
+current_layer = tf.nn.relu(tf.tanh((tf.matmul(current_layer, layer6))))
 in_dimension = layer_dimension[0]
 
-for i in range(1, num_layers):
-    out_dimension = layer_dimension[i]
-    weight = get_weight([in_dimension, out_dimension])
-    # bias = tf.Variable(tf.constant(0.1, shape=[out_dimension]))
-    current_layer = tf.nn.relu((tf.matmul(current_layer, weight)))
-    in_dimension = layer_dimension[i]
+# for i in range(1, num_layers):
+#     out_dimension = layer_dimension[i]
+#     weight = get_weight([in_dimension, out_dimension])
+#     # bias = tf.Variable(tf.constant(0.1, shape=[out_dimension]))
+#     current_layer = tf.nn.relu((tf.matmul(current_layer, weight)))
+#     in_dimension = layer_dimension[i]
 
 current_layer = tf.reshape(current_layer, [-1, 28, 28])
 
-new_image = tf.maximum(tf.minimum(arg_s * current_layer + train_y, 1), -1)
+output_layer = current_layer
+new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)
 
 w1_n = get_non_trainable_variable(w1_t, sess)
 w2_n = get_non_trainable_variable(w2_t, sess)
 
-model = get_model(w1_n, w2_n, train_y)
+model = get_model(w1_n, w2_n, new_image)
 model = tf.nn.softmax(model)
 
 lc = -tf.reduce_mean(train_x * tf.log(tf.clip_by_value(model, 1e-10, 1.0)))
-lf = 0.08 * tf.reduce_mean(tf.square(new_image - train_y))
+lf = arg_w * tf.reduce_mean(tf.square(new_image - train_y))
 loss = lc + lf
 
 # tf.add_to_collection('losses', loss)
@@ -150,17 +165,33 @@ train_step = tf.train.AdamOptimizer(0.001).minimize(loss)
 
 init_op = tf.global_variables_initializer()
 sess.run(init_op)
-
 for i in range(steps):
     start = (i * batch_size) % dataset_size
     end = min(start + batch_size, dataset_size)
-
+    array = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+    array[0][i%10] = 1
+    # sess.run(train_step,
+    #          feed_dict={train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(batch_size, axis=0),
+    #                     train_y: train_images[start:end]})
     sess.run(train_step,
-             feed_dict={train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(batch_size, axis=0),
+             feed_dict={train_x: array.repeat(batch_size, axis=0),
                         train_y: train_images[start:end]})
 
     if i % check_interval == 0 and i != 0:
+        # total_cross_entropy = sess.run(loss, feed_dict={
+        #     train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+        #     train_y: train_images})
         total_cross_entropy = sess.run(loss, feed_dict={
+            train_x: array.repeat(dataset_size, axis=0),
+            train_y: train_images})
+
+        a = sess.run(output_layer, feed_dict={
+            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+            train_y: train_images})
+        b = sess.run(new_image, feed_dict={
+            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+            train_y: train_images})
+        c = sess.run(model, feed_dict={
             train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
             train_y: train_images})
 
