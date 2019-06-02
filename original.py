@@ -65,7 +65,7 @@ target_output = get_model(w1_t, w2_t, target_train_x)
 # cross_entropy = -tf.reduce_mean(target_train_label * tf.log(tf.clip_by_value(target_output, 1e-10, 1.0)))
 
 cross_entropy = tf.reduce_mean(
-    tf.nn.softmax_cross_entropy_with_logits(labels=target_train_label, logits=target_output))
+    tf.nn.softmax_cross_entropy_with_logits_v2(labels=target_train_label, logits=target_output))
 train_step = tf.train.AdamOptimizer(0.001).minimize(cross_entropy)
 
 dataset_size = len(train_images)
@@ -162,11 +162,11 @@ w2_n = get_non_trainable_variable(w2_n)
 
 model = get_model(w1_n, w2_n, new_image)
 
-model = tf.nn.softmax(model)
-lc = -tf.reduce_mean(train_x * tf.log(tf.clip_by_value(model, 1e-10, 1.0)))
+# model = tf.nn.softmax(model)
+# lc = -tf.reduce_mean(train_x * tf.log(tf.clip_by_value(model, 1e-10, 1.0)))
 
-# lc = tf.reduce_mean(
-#     tf.nn.softmax_cross_entropy_with_logits_v2(labels=train_x, logits=model))
+lc = tf.reduce_mean(
+    tf.nn.softmax_cross_entropy_with_logits_v2(labels=train_x, logits=model))
 lf = arg_w * tf.reduce_mean(tf.square(new_image - train_y))
 loss = lc + lf
 
