@@ -6,8 +6,8 @@ from tensorflow.examples.tutorials.mnist import input_data
 from tensorflow.python import debug as tf_debug
 
 
-def get_non_trainable_variable(input_variable, session):
-    return tf.Variable(session.run(input_variable), trainable=False)
+def get_non_trainable_variable(input_variable):
+    return tf.Variable(input_variable, trainable=False)
 
 
 def compute_accuracy(session, prediction, v_xs, v_ys):
@@ -97,6 +97,13 @@ for epoch in range(epochs):
     print("At the end of epoch %d, loss: %g, accuracy: %g" % (epoch + 1, total_cross_entropy, accuracy))
     print("======================================================")
 
+w1_n = sess.run(w1_t)
+w2_n = sess.run(w2_t)
+sess.close()
+tf.reset_default_graph()
+
+sess = tf.Session()
+
 # 接下来是第二个模型
 print()
 print()
@@ -118,12 +125,12 @@ arg_s = 1
 arg_w = 0.06
 
 layer_dimension = [10, 128, 256, 512, 1024, 512, 784]
-layer1 = tf.Variable(tf.random_normal([10, 128], stddev=1, seed=1))
-layer2 = tf.Variable(tf.random_normal([128, 256], stddev=1, seed=1))
-layer3 = tf.Variable(tf.random_normal([256, 512], stddev=1, seed=1))
-layer4 = tf.Variable(tf.random_normal([512, 1024], stddev=1, seed=1))
-layer5 = tf.Variable(tf.random_normal([1024, 512], stddev=1, seed=1))
-layer6 = tf.Variable(tf.random_normal([512, 784], stddev=1, seed=1))
+layer1 = tf.Variable(tf.random_normal([10, 128], stddev=1, seed=2))
+layer2 = tf.Variable(tf.random_normal([128, 256], stddev=1, seed=2))
+layer3 = tf.Variable(tf.random_normal([256, 512], stddev=1, seed=2))
+layer4 = tf.Variable(tf.random_normal([512, 1024], stddev=1, seed=2))
+layer5 = tf.Variable(tf.random_normal([1024, 512], stddev=1, seed=2))
+layer6 = tf.Variable(tf.random_normal([512, 784], stddev=1, seed=2))
 num_layers = len(layer_dimension)
 current_layer = train_x
 
@@ -132,7 +139,7 @@ current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer2)))
 current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer3)))
 current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer4)))
 current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer5)))
-current_layer = tf.nn.relu(tf.tanh((tf.matmul(current_layer, layer6))))
+current_layer = tf.tanh((tf.matmul(current_layer, layer6)))
 in_dimension = layer_dimension[0]
 
 # for i in range(1, num_layers):
@@ -145,10 +152,10 @@ in_dimension = layer_dimension[0]
 current_layer = tf.reshape(current_layer, [-1, 28, 28])
 
 output_layer = current_layer
-new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)
+new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), 0)
 
-w1_n = get_non_trainable_variable(w1_t, sess)
-w2_n = get_non_trainable_variable(w2_t, sess)
+w1_n = get_non_trainable_variable(w1_n)
+w2_n = get_non_trainable_variable(w2_n)
 
 model = get_model(w1_n, w2_n, new_image)
 model = tf.nn.softmax(model)
@@ -168,21 +175,21 @@ sess.run(init_op)
 for i in range(steps):
     start = (i * batch_size) % dataset_size
     end = min(start + batch_size, dataset_size)
-    array = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-    array[0][i%10] = 1
-    # sess.run(train_step,
-    #          feed_dict={train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(batch_size, axis=0),
-    #                     train_y: train_images[start:end]})
+    # array = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+    # array[0][i % 10] = 1
     sess.run(train_step,
-             feed_dict={train_x: array.repeat(batch_size, axis=0),
+             feed_dict={train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(batch_size, axis=0),
                         train_y: train_images[start:end]})
+    # sess.run(train_step,
+    #          feed_dict={train_x: array.repeat(batch_size, axis=0),
+    #                     train_y: train_images[start:end]})
 
     if i % check_interval == 0 and i != 0:
         # total_cross_entropy = sess.run(loss, feed_dict={
         #     train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
         #     train_y: train_images})
         total_cross_entropy = sess.run(loss, feed_dict={
-            train_x: array.repeat(dataset_size, axis=0),
+            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
             train_y: train_images})
 
         a = sess.run(output_layer, feed_dict={
@@ -194,5 +201,13 @@ for i in range(steps):
         c = sess.run(model, feed_dict={
             train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
             train_y: train_images})
+        d = sess.run(w1_n, feed_dict={
+            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+            train_y: train_images})
+        e = sess.run(w2_n, feed_dict={
+            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+            train_y: train_images})
 
         print("After %d training step(s), loss on all data is %g" % (i, total_cross_entropy))
+        # print("lc: %g", d)
+        # print("lf: %g", e)
