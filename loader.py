@@ -41,6 +41,7 @@ def load_data():
 
     """
     dirname = os.path.join(os.path.dirname(__file__), 'data')
+    print(dirname)
     base = 'https://storage.googleapis.com/tensorflow/tf-keras-datasets/'
     files = [
         'train-labels-idx1-ubyte.gz', 'train-images-idx3-ubyte.gz',
