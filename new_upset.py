@@ -172,6 +172,9 @@ train_step = tf.train.AdamOptimizer(0.001).minimize(loss)
 
 init_op = tf.global_variables_initializer()
 sess.run(init_op)
+
+check_interval2 = 1
+
 for i in range(steps):
     start = (i * batch_size) % dataset_size
     end = min(start + batch_size, dataset_size)
@@ -184,7 +187,7 @@ for i in range(steps):
     #          feed_dict={train_x: array.repeat(batch_size, axis=0),
     #                     train_y: train_images[start:end]})
 
-    if i % check_interval == 0 and i != 0:
+    if i % check_interval2 == 0 and i != 0:
         # total_cross_entropy = sess.run(loss, feed_dict={
         #     train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
         #     train_y: train_images})
@@ -192,22 +195,19 @@ for i in range(steps):
             train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
             train_y: train_images})
 
-        a = sess.run(output_layer, feed_dict={
-            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
-            train_y: train_images})
-        b = sess.run(new_image, feed_dict={
-            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
-            train_y: train_images})
-        c = sess.run(model, feed_dict={
-            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
-            train_y: train_images})
-        d = sess.run(w1_n, feed_dict={
-            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
-            train_y: train_images})
-        e = sess.run(w2_n, feed_dict={
-            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
-            train_y: train_images})
+        # a = sess.run(output_layer, feed_dict={
+        #     train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+        #     train_y: train_images})
+        # b = sess.run(new_image, feed_dict={
+        #     train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+        #     train_y: train_images})
+        # c = sess.run(model, feed_dict={
+        #     train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+        #     train_y: train_images})
+        d = sess.run(layer5)
+        e = sess.run(layer6)
 
         print("After %d training step(s), loss on all data is %g" % (i, total_cross_entropy))
-        # print("lc: %g", d)
-        # print("lf: %g", e)
+        # W5和W6在Optimize的过程中没有变化
+        print("w5: %g", d)
+        print("w6: %g", e)
