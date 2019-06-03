@@ -1,3 +1,5 @@
+from os import mkdir
+
 import keras
 import numpy as np
 import tensorflow as tf
@@ -96,9 +98,9 @@ arg_w = 0.5
 #     epsilon = 1e-3
 
 current_layer = train_x
-w1_upset = tf.Variable(tf.random_normal([10, 128], stddev=2))
+w1_upset = tf.Variable(tf.random_normal([10, 128], stddev=2, mean=0))
 bias1 = tf.Variable(tf.constant(0.1, shape=[128]))
-w2_upset = tf.Variable(tf.random_normal([128, 784], stddev=2))
+w2_upset = tf.Variable(tf.random_normal([128, 784], stddev=2, mean=0))
 bias2 = tf.Variable(tf.constant(0.1, shape=[784]))
 current_layer = tf.nn.relu(tf.layers.batch_normalization(tf.matmul(current_layer, w1_upset) + bias1))
 current_layer = tf.tanh(tf.layers.batch_normalization(tf.matmul(current_layer, w2_upset) + bias2))
@@ -127,31 +129,34 @@ train_step = tf.train.AdamOptimizer(0.001).minimize(loss)
 sess = tf.Session()
 init_op = tf.global_variables_initializer()
 sess.run(init_op)
-for i in range(steps):
-    start = (i * batch_size) % dataset_size
-    end = min(start + batch_size, dataset_size)
-    sess.run(train_step,
-             feed_dict={train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(batch_size, axis=0),
-                        train_y: train_images[start:end]})
+epochs = 10
+for epoch in range(epochs):
+    print("Epoch %d / %d" % (epoch + 1, epochs))
+    mkdir('image/' + str(epoch))
+    for i in range(steps):
+        start = (i * batch_size) % dataset_size
+        end = min(start + batch_size, dataset_size)
+        sess.run(train_step,
+                 feed_dict={train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(batch_size, axis=0),
+                            train_y: train_images[start:end]})
 
-    if i % check_interval == 0 and i != 0:
+        if i % check_interval == 0 and i != 0:
+            total_cross_entropy = sess.run(loss, feed_dict={
+                train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+                train_y: train_images})
+            b = sess.run(new_image, feed_dict={
+                train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+                train_y: train_images})
+            ima = b[0]
+            ima = (ima / 2 + 0.5) * 255
+            im = Image.fromarray(ima)
+            im = im.convert('RGB')
+
+            im.save('image/' + str(epoch) + '/' + str(i) + '.jpg')
+            print("After %d training step(s), loss on all data is %g" % (i, total_cross_entropy))
         total_cross_entropy = sess.run(loss, feed_dict={
             train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
             train_y: train_images})
-
-        a = sess.run(output_layer, feed_dict={
-            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
-            train_y: train_images})
-        b = sess.run(new_image, feed_dict={
-            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
-            train_y: train_images})
-        c = sess.run(model, feed_dict={
-            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
-            train_y: train_images})
-
-        ima = b[0]
-        ima = (ima / 2 + 0.5) * 255
-        im = Image.fromarray(ima)
-        im = im.convert('RGB')
-        im.save('image/' + str(i) + '.jpg')
-        print("After %d training step(s), loss on all data is %g" % (i, total_cross_entropy))
+        print("======================================================")
+        print("At the end of epoch %d, loss: %g" % (epoch + 1, total_cross_entropy))
+        print("======================================================")
