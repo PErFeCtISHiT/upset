@@ -19,6 +19,32 @@ def get_model(w1, w2, x):
     return layer
 
 
+def print_num_of_total_parameters(output_detail=False, output_to_logging=False):
+    total_parameters = 0
+    parameters_string = ""
+
+    for variable in tf.trainable_variables():
+
+        shape = variable.get_shape()
+        variable_parameters = 1
+        for dim in shape:
+            variable_parameters *= dim.value
+        total_parameters += variable_parameters
+        if len(shape) == 1:
+            parameters_string += ("%s %d, " % (variable.name, variable_parameters))
+        else:
+            parameters_string += ("%s %s=%d, " % (variable.name, str(shape), variable_parameters))
+
+    if output_to_logging:
+        if output_detail:
+            print(parameters_string)
+        print("Total %d variables, %s params" % (len(tf.trainable_variables()), "{:,}".format(total_parameters)))
+    else:
+        if output_detail:
+            print(parameters_string)
+        print("Total %d variables, %s params" % (len(tf.trainable_variables()), "{:,}".format(total_parameters)))
+
+
 # sess = tf_debug.LocalCLIDebugWrapperSession(sess)
 image_width = 28
 class_num = 10
@@ -61,8 +87,6 @@ current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer3)))
 current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer4)))
 current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer5)))
 current_layer = tf.tanh((tf.matmul(current_layer, layer6)))
-in_dimension = layer_dimension[0]
-
 current_layer = tf.reshape(current_layer, [-1, 28, 28])
 
 output_layer = current_layer
@@ -77,9 +101,11 @@ model = tf.nn.softmax(model)
 lc = -tf.reduce_mean(train_x * tf.log(tf.clip_by_value(model, 1e-10, 1.0)))
 lf = arg_w * tf.reduce_mean(tf.square(new_image - train_y))
 loss = lc + lf
+
 # tf.add_to_collection('losses', loss)
 
 # total_loss = tf.add_n(tf.get_collection('losses'))
+
 
 train_step = tf.train.AdamOptimizer(0.001).minimize(loss)
 sess = tf.Session()
@@ -88,13 +114,12 @@ sess.run(init_op)
 for i in range(steps):
     start = (i * batch_size) % dataset_size
     end = min(start + batch_size, dataset_size)
-    array = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-    array[0][i % 10] = 1
     sess.run(train_step,
              feed_dict={train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(batch_size, axis=0),
                         train_y: train_images[start:end]})
 
     if i % check_interval == 0 and i != 0:
+        print_num_of_total_parameters(True,True)
         total_cross_entropy = sess.run(loss, feed_dict={
             train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
             train_y: train_images})
