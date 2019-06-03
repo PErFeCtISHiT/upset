@@ -60,7 +60,7 @@ test_images = (test_images / 255.0 - 0.5) * 2
 
 dataset_size = len(train_images)
 
-batch_size = 20
+batch_size = 10
 check_interval = 1000
 steps = dataset_size // batch_size
 steps = steps if dataset_size % batch_size == 0 else steps + 1
@@ -70,8 +70,8 @@ train_x = tf.placeholder(tf.float32, shape=(None, 10), name='x-input')
 # x
 train_y = tf.placeholder(tf.float32, shape=(None, 28, 28), name='y-input')
 
-arg_s = 1
-arg_w = 0.5
+arg_s = 0.5
+arg_w = 1
 
 # layer_dimension = [10, 128, 256, 512, 1024, 512, 784]
 # layer1 = tf.Variable(tf.random_normal([10, 128], stddev=2))
@@ -132,7 +132,7 @@ sess.run(init_op)
 epochs = 20
 for epoch in range(epochs):
     print("Epoch %d / %d" % (epoch + 1, epochs))
-    mkdir('image/' + str(epoch))
+    mkdir('image/' + str(epoch+1))
     for i in range(steps):
         start = (i * batch_size) % dataset_size
         end = min(start + batch_size, dataset_size)
@@ -140,7 +140,7 @@ for epoch in range(epochs):
                  feed_dict={train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(batch_size, axis=0),
                             train_y: train_images[start:end]})
 
-        if i % check_interval == 0 and i != 0:
+        if (i+1) % check_interval == 0:
             total_cross_entropy = sess.run(loss, feed_dict={
                 train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
                 train_y: train_images})
@@ -152,8 +152,8 @@ for epoch in range(epochs):
             im = Image.fromarray(ima)
             im = im.convert('RGB')
 
-            im.save('image/' + str(epoch) + '/' + str(i) + '.jpg')
-            print("After %d training step(s), loss on all data is %g" % (i, total_cross_entropy))
+            im.save('image/' + str(epoch+1) + '/' + str(i+1) + '.jpg')
+            print("After %d training step(s), loss on all data is %g" % (i+1, total_cross_entropy))
     total_cross_entropy = sess.run(loss, feed_dict={
         train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
         train_y: train_images})
