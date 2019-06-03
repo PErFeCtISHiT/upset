@@ -1,7 +1,7 @@
 import keras
 import numpy as np
 import tensorflow as tf
-
+from PIL import Image
 import loader
 
 
@@ -69,7 +69,7 @@ train_x = tf.placeholder(tf.float32, shape=(None, 10), name='x-input')
 train_y = tf.placeholder(tf.float32, shape=(None, 28, 28), name='y-input')
 
 arg_s = 1
-arg_w = 0.06
+arg_w = 0.5
 
 # layer_dimension = [10, 128, 256, 512, 1024, 512, 784]
 # layer1 = tf.Variable(tf.random_normal([10, 128], stddev=2))
@@ -98,13 +98,10 @@ arg_w = 0.06
 current_layer = train_x
 w1_upset = tf.Variable(tf.random_normal([10, 128], stddev=2))
 bias1 = tf.Variable(tf.constant(0.1, shape=[128]))
-w2_upset = tf.Variable(tf.random_normal([128, 256], stddev=2))
-bias2 = tf.Variable(tf.constant(0.1, shape=[256]))
-w3_upset = tf.Variable(tf.random_normal([256, 784], stddev=2))
-bias3 = tf.Variable(tf.constant(0.1, shape=[784]))
-current_layer = tf.nn.relu(tf.matmul(current_layer, w1_upset) + bias1)
-current_layer = tf.nn.relu(tf.matmul(current_layer, w2_upset) + bias2)
-current_layer = tf.tanh(tf.matmul(current_layer, w3_upset) + bias3)
+w2_upset = tf.Variable(tf.random_normal([128, 784], stddev=2))
+bias2 = tf.Variable(tf.constant(0.1, shape=[784]))
+current_layer = tf.nn.relu(tf.layers.batch_normalization(tf.matmul(current_layer, w1_upset) + bias1))
+current_layer = tf.tanh(tf.layers.batch_normalization(tf.matmul(current_layer, w2_upset) + bias2))
 current_layer = tf.reshape(current_layer, [-1, 28, 28])
 output_layer = current_layer
 new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)
@@ -152,4 +149,9 @@ for i in range(steps):
             train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
             train_y: train_images})
 
+        ima = b[0]
+        ima = (ima / 2 + 0.5) * 255
+        im = Image.fromarray(ima)
+        im = im.convert('RGB')
+        im.save('image/' + str(i) + '.jpg')
         print("After %d training step(s), loss on all data is %g" % (i, total_cross_entropy))
