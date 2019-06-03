@@ -71,24 +71,41 @@ train_y = tf.placeholder(tf.float32, shape=(None, 28, 28), name='y-input')
 arg_s = 1
 arg_w = 0.06
 
-layer_dimension = [10, 128, 256, 512, 1024, 512, 784]
-layer1 = tf.Variable(tf.random_normal([10, 128], stddev=1))
-layer2 = tf.Variable(tf.random_normal([128, 256], stddev=1))
-layer3 = tf.Variable(tf.random_normal([256, 512], stddev=1))
-layer4 = tf.Variable(tf.random_normal([512, 1024], stddev=1))
-layer5 = tf.Variable(tf.random_normal([1024, 512], stddev=1))
-layer6 = tf.Variable(tf.random_normal([512, 784], stddev=1))
-num_layers = len(layer_dimension)
+# layer_dimension = [10, 128, 256, 512, 1024, 512, 784]
+# layer1 = tf.Variable(tf.random_normal([10, 128], stddev=2))
+# layer2 = tf.Variable(tf.random_normal([128, 256], stddev=2))
+# layer3 = tf.Variable(tf.random_normal([256, 512], stddev=2))
+# layer4 = tf.Variable(tf.random_normal([512, 1024], stddev=2))
+# layer5 = tf.Variable(tf.random_normal([1024, 512], stddev=2))
+# layer6 = tf.Variable(tf.random_normal([512, 784], stddev=2))
+# num_layers = len(layer_dimension)
+# current_layer = train_x
+#
+# current_layer = tf.nn.relu(tf.matmul(current_layer, layer1))
+# current_layer = tf.nn.leaky_relu(tf.matmul(current_layer, layer2))
+# current_layer = tf.nn.leaky_relu(tf.matmul(current_layer, layer3))
+# current_layer = tf.nn.leaky_relu(tf.matmul(current_layer, layer4))
+# current_layer = tf.nn.leaky_relu(tf.matmul(current_layer, layer5))
+# current_layer = tf.tanh(tf.matmul(current_layer, layer6))
+# current_layer = tf.reshape(current_layer, [-1, 28, 28])
+
+# def fully_connected(prev_layer, num_units, is_training):
+#     # batch_normalization
+#     gamma = tf.Variable(tf.ones([num_units]))
+#     beta = tf.Variable(tf.zeros([num_units]))
+#     epsilon = 1e-3
+
 current_layer = train_x
-
-current_layer = tf.nn.relu((tf.matmul(current_layer, layer1)))
-current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer2)))
-current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer3)))
-current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer4)))
-current_layer = tf.nn.leaky_relu((tf.matmul(current_layer, layer5)))
-current_layer = tf.tanh((tf.matmul(current_layer, layer6)))
+w1_upset = tf.Variable(tf.random_normal([10, 128], stddev=2))
+bias1 = tf.Variable(tf.constant(0.1, shape=[128]))
+w2_upset = tf.Variable(tf.random_normal([128, 256], stddev=2))
+bias2 = tf.Variable(tf.constant(0.1, shape=[256]))
+w3_upset = tf.Variable(tf.random_normal([256, 784], stddev=2))
+bias3 = tf.Variable(tf.constant(0.1, shape=[784]))
+current_layer = tf.nn.relu(tf.matmul(current_layer, w1_upset) + bias1)
+current_layer = tf.nn.relu(tf.matmul(current_layer, w2_upset) + bias2)
+current_layer = tf.tanh(tf.matmul(current_layer, w3_upset) + bias3)
 current_layer = tf.reshape(current_layer, [-1, 28, 28])
-
 output_layer = current_layer
 new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)
 
@@ -104,7 +121,6 @@ lc = tf.reduce_mean(
     tf.nn.softmax_cross_entropy_with_logits_v2(labels=train_x, logits=model))
 lf = arg_w * tf.reduce_mean(tf.square(new_image - train_y))
 loss = lc + lf
-
 # tf.add_to_collection('losses', loss)
 
 # total_loss = tf.add_n(tf.get_collection('losses'))
@@ -122,7 +138,6 @@ for i in range(steps):
                         train_y: train_images[start:end]})
 
     if i % check_interval == 0 and i != 0:
-        print_num_of_total_parameters(True,True)
         total_cross_entropy = sess.run(loss, feed_dict={
             train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
             train_y: train_images})
@@ -130,10 +145,10 @@ for i in range(steps):
         a = sess.run(output_layer, feed_dict={
             train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
             train_y: train_images})
-        b = sess.run(w1_n, feed_dict={
+        b = sess.run(new_image, feed_dict={
             train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
             train_y: train_images})
-        c = sess.run(w2_n, feed_dict={
+        c = sess.run(model, feed_dict={
             train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
             train_y: train_images})
 
