@@ -60,7 +60,7 @@ test_images = (test_images / 255.0 - 0.5) * 2
 
 dataset_size = len(train_images)
 
-batch_size = 8
+batch_size = 20
 check_interval = 1000
 steps = dataset_size // batch_size
 steps = steps if dataset_size % batch_size == 0 else steps + 1
@@ -129,7 +129,7 @@ train_step = tf.train.AdamOptimizer(0.001).minimize(loss)
 sess = tf.Session()
 init_op = tf.global_variables_initializer()
 sess.run(init_op)
-epochs = 10
+epochs = 20
 for epoch in range(epochs):
     print("Epoch %d / %d" % (epoch + 1, epochs))
     mkdir('image/' + str(epoch))
@@ -154,9 +154,9 @@ for epoch in range(epochs):
 
             im.save('image/' + str(epoch) + '/' + str(i) + '.jpg')
             print("After %d training step(s), loss on all data is %g" % (i, total_cross_entropy))
-        total_cross_entropy = sess.run(loss, feed_dict={
-            train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
-            train_y: train_images})
-        print("======================================================")
-        print("At the end of epoch %d, loss: %g" % (epoch + 1, total_cross_entropy))
-        print("======================================================")
+    total_cross_entropy = sess.run(loss, feed_dict={
+        train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+        train_y: train_images})
+    print("======================================================")
+    print("At the end of epoch %d, loss: %g" % (epoch + 1, total_cross_entropy))
+    print("======================================================")
