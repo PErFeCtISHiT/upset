@@ -72,12 +72,12 @@ arg_s = 1
 arg_w = 0.06
 
 layer_dimension = [10, 128, 256, 512, 1024, 512, 784]
-layer1 = tf.Variable(tf.random_normal([10, 128], stddev=1, seed=1))
-layer2 = tf.Variable(tf.random_normal([128, 256], stddev=1, seed=1))
-layer3 = tf.Variable(tf.random_normal([256, 512], stddev=1, seed=1))
-layer4 = tf.Variable(tf.random_normal([512, 1024], stddev=1, seed=1))
-layer5 = tf.Variable(tf.random_normal([1024, 512], stddev=1, seed=1))
-layer6 = tf.Variable(tf.random_normal([512, 784], stddev=1, seed=1))
+layer1 = tf.Variable(tf.random_normal([10, 128], stddev=1))
+layer2 = tf.Variable(tf.random_normal([128, 256], stddev=1))
+layer3 = tf.Variable(tf.random_normal([256, 512], stddev=1))
+layer4 = tf.Variable(tf.random_normal([512, 1024], stddev=1))
+layer5 = tf.Variable(tf.random_normal([1024, 512], stddev=1))
+layer6 = tf.Variable(tf.random_normal([512, 784], stddev=1))
 num_layers = len(layer_dimension)
 current_layer = train_x
 
