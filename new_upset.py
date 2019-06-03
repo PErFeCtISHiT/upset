@@ -53,8 +53,8 @@ fashion_mnist = keras.datasets.fashion_mnist
 class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
                'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
 (train_images, train_labels), (test_images, test_labels) = loader.load_data()
-train_images = train_images / 255.0
-test_images = test_images / 255.0
+train_images = (train_images / 255.0 - 0.5) * 2
+test_images = (test_images / 255.0 - 0.5) * 2
 
 dataset_size = len(train_images)
 
@@ -96,9 +96,12 @@ w1_n = tf.convert_to_tensor(np.load('w1.npy'))
 w2_n = tf.convert_to_tensor(np.load('w2.npy'))
 
 model = get_model(w1_n, w2_n, new_image)
-model = tf.nn.softmax(model)
 
-lc = -tf.reduce_mean(train_x * tf.log(tf.clip_by_value(model, 1e-10, 1.0)))
+# model = tf.nn.softmax(model)
+# lc = -tf.reduce_mean(train_x * tf.log(tf.clip_by_value(model, 1e-10, 1.0)))
+
+lc = tf.reduce_mean(
+    tf.nn.softmax_cross_entropy_with_logits_v2(labels=train_x, logits=model))
 lf = arg_w * tf.reduce_mean(tf.square(new_image - train_y))
 loss = lc + lf
 
