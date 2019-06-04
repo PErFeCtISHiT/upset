@@ -3,9 +3,11 @@ import tensorflow as tf
 import keras
 import loader
 from PIL import Image
+from attack import fashion_mnist_ssim
+import os
 
-w1_upset = tf.convert_to_tensor(np.load('w1_u.npy'))
-w2_upset = tf.convert_to_tensor(np.load('w2_u.npy'))
+w1_upset = tf.Variable(np.load('w1_u.npy'), trainable=False)
+w2_upset = tf.Variable(np.load('w2_u.npy'), trainable=False)
 
 bias1 = tf.Variable(tf.constant(0.1, shape=[128]))
 bias2 = tf.Variable(tf.constant(0.1, shape=[784]))
@@ -42,7 +44,7 @@ def get_model(w1, w2, x):
 
 def aiTest(images, shape):
     global new_image
-    # images = (images / 255.0 - 0.5) * 2
+    images = (images / 255.0 - 0.5) * 2
     # for i in range(10):
     #     t = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
     #     t[0][i % 10] = 1
@@ -70,19 +72,23 @@ old_model = get_model(w1_n, w2_n, target_train_x)
 old_estimate_class = sess.run(old_model, feed_dict={target_train_x: test_images[0:1000]})
 new_estimate_class = sess.run(old_model, feed_dict={target_train_x: new_images})
 
-for index in range(len(old_estimate_class)):
-    print("The old is ", old_estimate_class[index], "and the new is ", new_estimate_class[index])
-    print()
+# for index in range(len(old_estimate_class)):
+#     print("The old is ", old_estimate_class[index], "and the new is ", new_estimate_class[index])
+#     print()
 
 accuracy = compute_accuracy(sess, new_estimate_class, old_estimate_class)
 
-print('Accuracy is %g' % accuracy)
+print('Attack Accuracy is %g' % accuracy)
 
+ssim_accuracy = fashion_mnist_ssim.get_ssim_value(test_images[0:1000], new_images)
+print('ssim accuracy is %g' % ssim_accuracy)
 # for pic_class in b:
 #     print(pic_class)
 
+if not os.path.isdir('image/test'):
+    os.mkdir('image/test')
 for j in range(len(new_images)):
     ima = new_images[j]
     im = Image.fromarray(ima)
     im = im.convert('RGB')
-    im.save('image/test' + str(j) + '.jpg')
+    im.save('image/test/' + str(j) + '.jpg')
