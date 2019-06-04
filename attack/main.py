@@ -6,8 +6,8 @@ from PIL import Image
 from attack import fashion_mnist_ssim
 import os
 
-w1_upset = tf.Variable(np.load('w1_u.npy'), trainable=False)
-w2_upset = tf.Variable(np.load('w2_u.npy'), trainable=False)
+w1_upset = tf.Variable(np.load('model/w1_u.npy'), trainable=False)
+w2_upset = tf.Variable(np.load('model/w2_u.npy'), trainable=False)
 
 bias1 = tf.Variable(tf.constant(0.1, shape=[128]))
 bias2 = tf.Variable(tf.constant(0.1, shape=[784]))
@@ -60,8 +60,8 @@ fashion_mnist = keras.datasets.fashion_mnist
 
 new_images = aiTest(test_images[0:1000], [1000, 28, 28, 1])
 
-w1_n = tf.Variable(np.load('w1.npy'), trainable=False)
-w2_n = tf.Variable(np.load('w2.npy'), trainable=False)
+w1_n = tf.Variable(np.load('model/w1.npy'), trainable=False)
+w2_n = tf.Variable(np.load('moedl/w2.npy'), trainable=False)
 
 init_op = tf.global_variables_initializer()
 sess.run(init_op)
