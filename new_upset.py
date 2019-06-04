@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 import loader
+import ssim
 
 
 def get_weight(shape):
@@ -118,7 +119,8 @@ model = get_model(w1_n, w2_n, new_image)
 
 lc = tf.reduce_mean(
     tf.nn.softmax_cross_entropy_with_logits_v2(labels=train_x, logits=model))
-lf = arg_w * tf.reduce_mean(tf.square(new_image - train_y))
+# lf = arg_w * tf.reduce_mean(tf.square(new_image - train_y))
+lf = - arg_w * tf.log(tf.clip_by_value(ssim.get_ssim_value(train_y, new_image), 1e-10, 1))
 loss = lc + lf
 # tf.add_to_collection('losses', loss)
 
@@ -147,6 +149,9 @@ for epoch in range(epochs):
             b = sess.run(new_image, feed_dict={
                 train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
                 train_y: train_images})
+            c = sess.run(lf, feed_dict={
+                train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+                train_y: train_images})
             ima = b[0]
             ima = (ima / 2 + 0.5) * 255
             im = Image.fromarray(ima)
@@ -154,6 +159,7 @@ for epoch in range(epochs):
 
             im.save('image/' + str(epoch + 1) + '/' + str(i + 1) + '.jpg')
             print("After %d training step(s), loss on all data is %g" % (i + 1, total_cross_entropy))
+            print("lf: ", str(c))
     total_cross_entropy = sess.run(loss, feed_dict={
         train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
         train_y: train_images})
