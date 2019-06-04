@@ -2,11 +2,13 @@ import os
 
 import keras
 import tensorflow as tf
+from keras.callbacks import ReduceLROnPlateau
+
 import loader
 import numpy as np
 
 from keras.models import Model
-from keras.layers import Input, Dense, Conv2D, MaxPool2D, Flatten
+from keras.layers import Input, Dense, Conv2D, MaxPool2D, Flatten, Dropout
 from keras.optimizers import Adam
 
 batch_data_path = './model_data/batch_data.txt'
@@ -76,17 +78,24 @@ tf.reset_default_graph()
 start = Input(shape=(image_width, image_width, channel_num,))
 x = Conv2D(filters=32, kernel_size=(5, 5), padding='Same', activation='relu', name="conv2d_1")(start)
 x = Conv2D(filters=32, kernel_size=(5, 5), padding='Same', activation='relu', name="conv2d_2")(x)
+x = MaxPool2D(pool_size=(2, 2), name="max2d_1")(x)
+x = Dropout(0.25)(x)
 x = Conv2D(filters=64, kernel_size=(3, 3), padding='Same', activation='relu', name="conv2d_3")(x)
 x = Conv2D(filters=64, kernel_size=(3, 3), padding='Same', activation='relu', name="conv2d_4")(x)
-x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), name="max2d_1")(x)
+x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), name="max2d_2")(x)
+x = Dropout(0.25)(x)
 x = Flatten(name="flatten")(x)
 x = Dense(256, activation='relu', name="dense1")(x)
+x = Dropout(0.25)(x)
 x = Dense(10, activation='softmax', name="dense2")(x)
+
+learning_rate_reduction = ReduceLROnPlateau(monitor='val_acc', patience=3,
+                                            verbose=1, factor=0.5, min_lr=0.00001)
 
 model = Model(inputs=start, outputs=x)
 model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accuracy'])
 model.fit(train_images, train_labels, validation_data=[test_images, test_labels], batch_size=batch_size, epochs=epochs,
           verbose=1,
-          callbacks=[history])
+          callbacks=[history, learning_rate_reduction])
 
 model.save_weights(weight_path)
