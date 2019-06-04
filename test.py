@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import keras
 
 y = tf.Variable(np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [0, 1, 0]]), dtype=tf.float32)  # 每一行只有一个1
 logits = tf.Variable(np.array([[12, 3, 2], [3, 10, 1], [1, 2, 5], [4, 6.5, 1.2], [3, 6, 1]]), dtype=tf.float32)
@@ -14,4 +15,16 @@ E2 = sess.run(tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=y
 print(E1)
 print(E2)
 
+
+def check(var1, var2):
+    var1 = tf.zeros([5, 3])
+    var2 = tf.zeros([5, 3])
+
+
+check(y, logits)
+
+print(sess.run(y))
+print(sess.run(logits))
 # 可以看到上面的多除以了一个３
+
+keras.engine.input_layer.Input()
