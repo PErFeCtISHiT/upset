@@ -108,8 +108,8 @@ current_layer = tf.reshape(current_layer, [-1, 28, 28])
 output_layer = current_layer
 new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)
 
-w1_n = tf.convert_to_tensor(np.load('w1.npy'))
-w2_n = tf.convert_to_tensor(np.load('w2.npy'))
+w1_n = tf.Variable(np.load('w1.npy'), trainable=False)
+w2_n = tf.Variable(np.load('w2.npy'), trainable=False)
 
 model = get_model(w1_n, w2_n, new_image)
 
@@ -132,7 +132,7 @@ sess.run(init_op)
 epochs = 20
 for epoch in range(epochs):
     print("Epoch %d / %d" % (epoch + 1, epochs))
-    mkdir('image/' + str(epoch+1))
+    mkdir('image/' + str(epoch + 1))
     for i in range(steps):
         start = (i * batch_size) % dataset_size
         end = min(start + batch_size, dataset_size)
@@ -140,7 +140,7 @@ for epoch in range(epochs):
                  feed_dict={train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(batch_size, axis=0),
                             train_y: train_images[start:end]})
 
-        if (i+1) % check_interval == 0:
+        if (i + 1) % check_interval == 0:
             total_cross_entropy = sess.run(loss, feed_dict={
                 train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
                 train_y: train_images})
@@ -152,8 +152,8 @@ for epoch in range(epochs):
             im = Image.fromarray(ima)
             im = im.convert('RGB')
 
-            im.save('image/' + str(epoch+1) + '/' + str(i+1) + '.jpg')
-            print("After %d training step(s), loss on all data is %g" % (i+1, total_cross_entropy))
+            im.save('image/' + str(epoch + 1) + '/' + str(i + 1) + '.jpg')
+            print("After %d training step(s), loss on all data is %g" % (i + 1, total_cross_entropy))
     total_cross_entropy = sess.run(loss, feed_dict={
         train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
         train_y: train_images})

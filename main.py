@@ -25,6 +25,12 @@ init_op = tf.global_variables_initializer()
 sess.run(init_op)
 
 
+def compute_accuracy(session, old_estimate_class, new_estimate_class):
+    return session.run(
+        tf.reduce_mean(
+            tf.cast(tf.not_equal(tf.argmax(old_estimate_class, 1), tf.argmax(new_estimate_class, 1)), tf.float32)))
+
+
 def get_model(w1, w2, x):
     layer = tf.reshape(x, [-1, 784])
     layer = tf.matmul(layer, w1)
@@ -36,11 +42,13 @@ def get_model(w1, w2, x):
 
 def aiTest(images, shape):
     global new_image
-    images = (images / 255.0 - 0.5) * 2
-    for i in range(10):
-        t = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-        t[0][i % 10] = 1
-        new_image = sess.run(new_image_tensor, feed_dict={train_x: t.repeat(shape[0], axis=0), train_y: images})
+    # images = (images / 255.0 - 0.5) * 2
+    # for i in range(10):
+    #     t = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+    #     t[0][i % 10] = 1
+    #     new_image = sess.run(new_image_tensor, feed_dict={train_x: t.repeat(shape[0], axis=0), train_y: images})
+    t = np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+    new_image = sess.run(new_image_tensor, feed_dict={train_x: t.repeat(shape[0], axis=0), train_y: images})
     generate_images = (new_image / 2 + 0.5) * 255
     return generate_images
 
@@ -50,12 +58,25 @@ fashion_mnist = keras.datasets.fashion_mnist
 
 new_images = aiTest(test_images[0:1000], [1000, 28, 28, 1])
 
-w1_n = tf.convert_to_tensor(np.load('w1.npy'))
-w2_n = tf.convert_to_tensor(np.load('w2.npy'))
+w1_n = tf.Variable(np.load('w1.npy'), trainable=False)
+w2_n = tf.Variable(np.load('w2.npy'), trainable=False)
 
-model = get_model(w1_n, w2_n, new_images)
-t = np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-b = sess.run(model, feed_dict={train_x: t.repeat(1000, axis=0), train_y: test_images[0:1000]})
+init_op = tf.global_variables_initializer()
+sess.run(init_op)
+
+target_train_x = tf.placeholder(tf.float32, shape=(None, 28, 28))
+old_model = get_model(w1_n, w2_n, target_train_x)
+
+old_estimate_class = sess.run(old_model, feed_dict={target_train_x: test_images[0:1000]})
+new_estimate_class = sess.run(old_model, feed_dict={target_train_x: new_images})
+
+accuracy = compute_accuracy(sess, new_estimate_class, old_estimate_class)
+
+print('Accuracy is %g' % accuracy)
+
+# for pic_class in b:
+#     print(pic_class)
+
 for j in range(len(new_images)):
     ima = new_images[j]
     im = Image.fromarray(ima)
