@@ -40,7 +40,7 @@ train_x = tf.placeholder(tf.float32, shape=(None, 10), name='x-input')
 train_y = tf.placeholder(tf.float32, shape=(None, 28, 28), name='y-input')
 
 arg_s = 1
-arg_w = 0
+arg_w = 1
 
 current_layer = train_x
 w1_upset = tf.Variable(tf.random_normal([10, 128], stddev=2, mean=0))
@@ -53,8 +53,8 @@ current_layer = tf.reshape(current_layer, [-1, 28, 28])
 output_layer = current_layer
 new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)
 
-w1_n = tf.convert_to_tensor(np.load('w1.npy'))
-w2_n = tf.convert_to_tensor(np.load('w2.npy'))
+w1_n = tf.Variable(np.load('w1.npy'), trainable=False)
+w2_n = tf.Variable(np.load('w2.npy'), trainable=False)
 
 model = get_model(w1_n, w2_n, new_image)
 

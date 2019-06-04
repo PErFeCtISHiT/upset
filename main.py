@@ -70,6 +70,10 @@ old_model = get_model(w1_n, w2_n, target_train_x)
 old_estimate_class = sess.run(old_model, feed_dict={target_train_x: test_images[0:1000]})
 new_estimate_class = sess.run(old_model, feed_dict={target_train_x: new_images})
 
+for index in range(len(old_estimate_class)):
+    print("The old is ", old_estimate_class[index], "and the new is ", new_estimate_class[index])
+    print()
+
 accuracy = compute_accuracy(sess, new_estimate_class, old_estimate_class)
 
 print('Accuracy is %g' % accuracy)
