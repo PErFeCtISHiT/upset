@@ -11,9 +11,9 @@ from keras.models import Model
 from keras.layers import Input, Dense, Conv2D, MaxPool2D, Flatten, Dropout
 from keras.optimizers import Adam
 
-batch_data_path = './model_data/batch_data.txt'
-epoch_data_path = './model_data/epoch_data.txt'
-weight_path = './model_data/my_model_weights.h5'
+batch_data_path = '../model_data/batch_data.txt'
+epoch_data_path = '../model_data/epoch_data.txt'
+weight_path = '../model_data/my_model_weights.h5'
 
 
 def ensure_pre_dirs_exists(*input_dirs):
@@ -59,7 +59,7 @@ image_width = 28
 class_num = 10
 channel_num = 1
 batch_size = 64
-epochs = 32
+epochs = 1
 
 fashion_mnist = keras.datasets.fashion_mnist
 class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
