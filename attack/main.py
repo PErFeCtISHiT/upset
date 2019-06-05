@@ -6,13 +6,13 @@ from PIL import Image
 from attack import fashion_mnist_ssim
 import os
 
-w1_upset = tf.Variable(np.load('model/w1_u.npy'), trainable=False)
-w2_upset = tf.Variable(np.load('model/w2_u.npy'), trainable=False)
+w1_upset = tf.Variable(np.load('../model/w1_u_1.npy'), trainable=False)
+w2_upset = tf.Variable(np.load('../model/w2_u_1.npy'), trainable=False)
 
 bias1 = tf.Variable(tf.constant(0.1, shape=[128]))
 bias2 = tf.Variable(tf.constant(0.1, shape=[784]))
 
-arg_s = 1
+arg_s = 0.7
 
 train_x = tf.placeholder(tf.float32, shape=(None, 10), name='x-input')
 train_y = tf.placeholder(tf.float32, shape=(None, 28, 28), name='y-input')
@@ -49,7 +49,7 @@ def aiTest(images, shape):
     #     t = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
     #     t[0][i % 10] = 1
     #     new_image = sess.run(new_image_tensor, feed_dict={train_x: t.repeat(shape[0], axis=0), train_y: images})
-    t = np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+    t = np.array([[0, 1, 0, 0, 0, 0, 0, 0, 0, 0]])
     new_image = sess.run(new_image_tensor, feed_dict={train_x: t.repeat(shape[0], axis=0), train_y: images})
     generate_images = (new_image / 2 + 0.5) * 255
     return generate_images
@@ -60,8 +60,8 @@ fashion_mnist = keras.datasets.fashion_mnist
 
 new_images = aiTest(test_images[0:1000], [1000, 28, 28, 1])
 
-w1_n = tf.Variable(np.load('model/w1.npy'), trainable=False)
-w2_n = tf.Variable(np.load('moedl/w2.npy'), trainable=False)
+w1_n = tf.Variable(np.load('../model/w1.npy'), trainable=False)
+w2_n = tf.Variable(np.load('../model/w2.npy'), trainable=False)
 
 init_op = tf.global_variables_initializer()
 sess.run(init_op)
@@ -85,10 +85,10 @@ print('ssim accuracy is %g' % ssim_accuracy)
 # for pic_class in b:
 #     print(pic_class)
 
-if not os.path.isdir('image/test'):
-    os.mkdir('image/test')
+if not os.path.isdir('../image/test'):
+    os.mkdir('../image/test')
 for j in range(len(new_images)):
     ima = new_images[j]
     im = Image.fromarray(ima)
     im = im.convert('RGB')
-    im.save('image/test/' + str(j) + '.jpg')
+    im.save('../image/test/' + str(j) + '.jpg')

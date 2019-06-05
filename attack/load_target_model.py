@@ -3,7 +3,7 @@ from keras.models import Model
 from keras.layers import Input, Dense, Conv2D, MaxPool2D, Flatten
 import os
 
-weight_path = '../model_data/my_model_weights.h5'
+weight_path = '../model/my_model_weights.h5'
 if not os.path.exists(weight_path):
     print('权重路径', weight_path, '不存在!')
     exit(0)

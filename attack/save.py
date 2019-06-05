@@ -5,6 +5,11 @@ from PIL import Image
 import loader
 from attack import fashion_mnist_ssim
 import os
+import sys
+
+type_argv = sys.argv[1]
+array = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+array[0][int(type_argv)] = 1
 
 
 def get_model(w1, w2, x):
@@ -39,7 +44,7 @@ train_x = tf.placeholder(tf.float32, shape=(None, 10), name='x-input')
 # x
 train_y = tf.placeholder(tf.float32, shape=(None, 28, 28), name='y-input')
 
-arg_s = 0.1
+arg_s = 0.7
 arg_w = 1
 
 current_layer = train_x
@@ -53,8 +58,8 @@ current_layer = tf.reshape(current_layer, [-1, 28, 28])
 output_layer = current_layer
 new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)
 
-w1_n = tf.Variable(np.load('model/w1.npy'), trainable=False)
-w2_n = tf.Variable(np.load('model/w2.npy'), trainable=False)
+w1_n = tf.Variable(np.load('../model/w1.npy'), trainable=False)
+w2_n = tf.Variable(np.load('../model/w2.npy'), trainable=False)
 
 model = get_model(w1_n, w2_n, new_image)
 
@@ -70,49 +75,49 @@ init_op = tf.global_variables_initializer()
 sess.run(init_op)
 epochs = 5
 for epoch in range(epochs):
-    if not os.path.isdir('image/' + str(epoch)):
-        os.mkdir('image/' + str(epoch))
+    if not os.path.isdir('../image/' + str(epoch)):
+        os.mkdir('../image/' + str(epoch))
     print("Epoch %d / %d" % (epoch + 1, epochs))
     for i in range(steps):
         start = (i * batch_size) % dataset_size
         end = min(start + batch_size, dataset_size)
         sess.run(train_step,
-                 feed_dict={train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(batch_size, axis=0),
+                 feed_dict={train_x: array.repeat(batch_size, axis=0),
                             train_y: train_images[start:end]})
 
         if i % check_interval == 0 and i != 0:
             total_cross_entropy = sess.run(loss, feed_dict={
-                train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+                train_x: array.repeat(dataset_size, axis=0),
                 train_y: train_images})
-            b = sess.run(new_image, feed_dict={
-                train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
-                train_y: train_images})
-            a = sess.run(model, feed_dict={
-                train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
-                train_y: train_images})
-            c = sess.run(lc, feed_dict={
-                train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
-                train_y: train_images})
-            ima = b[0]
-            ima = (ima / 2 + 0.5) * 255
-            im = Image.fromarray(ima)
-            im = im.convert('RGB')
+            # b = sess.run(new_image, feed_dict={
+            #     train_x: array.repeat(dataset_size, axis=0),
+            #     train_y: train_images})
+            # a = sess.run(model, feed_dict={
+            #     train_x: array.repeat(dataset_size, axis=0),
+            #     train_y: train_images})
+            # c = sess.run(lc, feed_dict={
+            #     train_x: array.repeat(dataset_size, axis=0),
+            #     train_y: train_images})
+            # ima = b[0]
+            # ima = (ima / 2 + 0.5) * 255
+            # im = Image.fromarray(ima)
+            # im = im.convert('RGB')
 
-            im.save('image/' + str(epoch) + '/' + str(i) + '.jpg')
+            # im.save('../image/' + str(epoch) + '/' + str(i) + '.jpg')
             print("After %d training step(s), loss on all data is %g" % (i, total_cross_entropy))
     total_cross_entropy = sess.run(loss, feed_dict={
-        train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+        train_x: array.repeat(dataset_size, axis=0),
         train_y: train_images})
     print("======================================================")
     print("At the end of epoch %d, loss: %g" % (epoch + 1, total_cross_entropy))
     print("======================================================")
 
 w1_u = sess.run(w1_upset, feed_dict={
-    train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+    train_x: array.repeat(dataset_size, axis=0),
     train_y: train_images})
 w2_u = sess.run(w2_upset, feed_dict={
-    train_x: np.array([[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]).repeat(dataset_size, axis=0),
+    train_x: array.repeat(dataset_size, axis=0),
     train_y: train_images})
 
-np.save('model/w1_u.npy', w1_u)
-np.save('model/w2_u.npy', w2_u)
+np.save('../model/w1_u_' + str(type_argv) + '.npy', w1_u)
+np.save('../model/w2_u_' + str(type_argv) + '.npy', w2_u)
