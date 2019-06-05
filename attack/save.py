@@ -47,6 +47,7 @@ train_y = tf.placeholder(tf.float32, shape=(None, 28, 28), name='y-input')
 arg_s = 0.7
 arg_w = 1
 
+
 current_layer = train_x
 w1_upset = tf.Variable(tf.random_normal([10, 128], stddev=2, mean=0))
 bias1 = tf.Variable(tf.constant(0.1, shape=[128]))
