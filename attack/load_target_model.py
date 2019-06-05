@@ -25,10 +25,10 @@ def get_model_output(input_tensor):
         layer.trainable = False
     return model.output
 
-
-test_tensor = tf.zeros([10, 28, 28, 1])
-output = get_model_output(test_tensor)
-sess = tf.Session()
-init = tf.global_variables_initializer()
-sess.run(init)
-print(sess.run(output))
+def test:
+    test_tensor = tf.zeros([10, 28, 28, 1])
+    output = get_model_output(test_tensor)
+    sess = tf.Session()
+    init = tf.global_variables_initializer()
+    sess.run(init)
+    print(sess.run(output))
