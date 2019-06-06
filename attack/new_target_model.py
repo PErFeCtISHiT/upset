@@ -59,7 +59,7 @@ image_width = 28
 class_num = 10
 channel_num = 1
 batch_size = 64
-epochs = 1
+epochs = 32
 
 fashion_mnist = keras.datasets.fashion_mnist
 class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
@@ -77,10 +77,10 @@ tf.reset_default_graph()
 
 start = Input(shape=(image_width, image_width, channel_num,))
 x = Conv2D(filters=32, kernel_size=(5, 5), padding='Same', activation='relu', name="conv2d_1")(start)
-x = Conv2D(filters=32, kernel_size=(5, 5), padding='Same', activation='relu', name="conv2d_2")(x)
+# x = Conv2D(filters=32, kernel_size=(5, 5), padding='Same', activation='relu', name="conv2d_2")(x)
 x = MaxPool2D(pool_size=(2, 2), name="max2d_1")(x)
 x = Dropout(0.25)(x)
-x = Conv2D(filters=64, kernel_size=(3, 3), padding='Same', activation='relu', name="conv2d_3")(x)
+# x = Conv2D(filters=64, kernel_size=(3, 3), padding='Same', activation='relu', name="conv2d_3")(x)
 x = Conv2D(filters=64, kernel_size=(3, 3), padding='Same', activation='relu', name="conv2d_4")(x)
 x = MaxPool2D(pool_size=(2, 2), strides=(2, 2), name="max2d_2")(x)
 x = Dropout(0.25)(x)
