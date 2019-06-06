@@ -12,7 +12,7 @@ w2_upset = tf.Variable(np.load('../model/w2_u_1.npy'), trainable=False)
 bias1 = tf.Variable(tf.constant(0.1, shape=[128]))
 bias2 = tf.Variable(tf.constant(0.1, shape=[784]))
 
-arg_s = 0.7
+arg_s = 1
 
 train_x = tf.placeholder(tf.float32, shape=(None, 10), name='x-input')
 train_y = tf.placeholder(tf.float32, shape=(None, 28, 28), name='y-input')
@@ -76,7 +76,7 @@ new_estimate_class = sess.run(old_model, feed_dict={target_train_x: new_images})
 #     print("The old is ", old_estimate_class[index], "and the new is ", new_estimate_class[index])
 #     print()
 
-accuracy = compute_accuracy(sess, new_estimate_class, old_estimate_class)
+accuracy = compute_accuracy(sess, old_estimate_class, new_estimate_class)
 
 print('Attack Accuracy is %g' % accuracy)
 
@@ -87,8 +87,8 @@ print('ssim accuracy is %g' % ssim_accuracy)
 
 if not os.path.isdir('../image/test'):
     os.mkdir('../image/test')
-for j in range(len(new_images)):
-    ima = new_images[j]
-    im = Image.fromarray(ima)
-    im = im.convert('RGB')
-    im.save('../image/test/' + str(j) + '.jpg')
+# for j in range(len(new_images)):
+#     ima = new_images[j]
+#     im = Image.fromarray(ima)
+#     im = im.convert('RGB')
+#     im.save('../image/test/' + str(j) + '.jpg')

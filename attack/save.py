@@ -6,6 +6,7 @@ import loader
 from attack import fashion_mnist_ssim
 import os
 import sys
+from attack import load_target_model
 
 type_argv = sys.argv[1]
 array = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
@@ -62,8 +63,8 @@ new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)
 w1_n = tf.Variable(np.load('../model/w1.npy'), trainable=False)
 w2_n = tf.Variable(np.load('../model/w2.npy'), trainable=False)
 
-model = get_model(w1_n, w2_n, new_image)
-
+# model = get_model(w1_n, w2_n, new_image)
+model = load_target_model.get_model_output(new_image)
 lc = tf.reduce_mean(
     tf.nn.softmax_cross_entropy_with_logits_v2(labels=train_x, logits=model))
 # lf = arg_w * tf.reduce_mean(tf.square(new_image - train_y))
