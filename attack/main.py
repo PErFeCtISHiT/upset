@@ -1,5 +1,7 @@
+import sys
 import numpy as np
 import tensorflow as tf
+sys.path.append('..')
 import keras
 from util import loader
 import os
