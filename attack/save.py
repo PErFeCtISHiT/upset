@@ -1,12 +1,11 @@
 import os
 import sys
 
+sys.path.append('..')
 import keras
 import numpy as np
 import tensorflow as tf
-from PIL import Image
-import loader
-from attack import fashion_mnist_ssim
+from util import loader
 from attack import load_target_model
 
 type_argv = sys.argv[1]
@@ -68,7 +67,6 @@ i_bias2 = tf.Variable(tf.constant(0.1, shape=[784]))
 image_layer = tf.nn.relu(tf.layers.batch_normalization(tf.matmul(image_layer, i1_upset) + i_bias1))
 image_layer = tf.tanh(tf.layers.batch_normalization(tf.matmul(image_layer, i2_upset) + i_bias2))
 image_layer = tf.reshape(image_layer, [-1, 28, 28])
-
 
 new_image = tf.maximum(tf.minimum(arg_s * output_layer + image_layer * arg_o + train_y, 1), -1)
 # new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)

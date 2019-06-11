@@ -1,9 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import keras
-import loader
-from tensorflow.examples.tutorials.mnist import input_data
-from tensorflow.python import debug as tf_debug
+from util import loader
 
 
 def get_non_trainable_variable(input_variable):

@@ -4,8 +4,7 @@ import keras
 import numpy as np
 import tensorflow as tf
 from PIL import Image
-import loader
-from attack import fashion_mnist_ssim
+from util import loader
 from attack import load_target_model
 
 

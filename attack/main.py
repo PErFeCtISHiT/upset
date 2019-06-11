@@ -1,9 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import keras
-import loader
-from PIL import Image
-from attack import fashion_mnist_ssim
+from util import loader
 import os
 w1_upset = tf.Variable(np.load('../model/w1_u_1.npy'), trainable=False)
 w2_upset = tf.Variable(np.load('../model/w2_u_1.npy'), trainable=False)

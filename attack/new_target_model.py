@@ -4,7 +4,7 @@ import keras
 import tensorflow as tf
 from keras.callbacks import ReduceLROnPlateau
 
-import loader
+from util import loader
 import numpy as np
 
 from keras.models import Model
