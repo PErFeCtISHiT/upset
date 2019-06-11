@@ -5,15 +5,13 @@ import loader
 from PIL import Image
 from attack import fashion_mnist_ssim
 import os
-
 w1_upset = tf.Variable(np.load('../model/w1_u_1.npy'), trainable=False)
 w2_upset = tf.Variable(np.load('../model/w2_u_1.npy'), trainable=False)
 
 bias1 = tf.Variable(tf.constant(0.1, shape=[128]))
 bias2 = tf.Variable(tf.constant(0.1, shape=[784]))
 
-arg_s = 1
-
+arg_s = 0.5
 train_x = tf.placeholder(tf.float32, shape=(None, 10), name='x-input')
 train_y = tf.placeholder(tf.float32, shape=(None, 28, 28), name='y-input')
 
@@ -44,12 +42,19 @@ def get_model(w1, w2, x):
 
 def aiTest(images, shape):
     global new_image
+    global ssim_accuracy
     images = (images / 255.0 - 0.5) * 2
     # for i in range(10):
     #     t = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
     #     t[0][i % 10] = 1
     #     new_image = sess.run(new_image_tensor, feed_dict={train_x: t.repeat(shape[0], axis=0), train_y: images})
     t = np.array([[0, 1, 0, 0, 0, 0, 0, 0, 0, 0]])
+    ssim_accuracy2 = tf.reduce_mean(tf.image.ssim(tf.reshape(train_y, [-1, 28, 28, 1]) / 2 + 0.5,
+                                                  tf.reshape(new_image_tensor, [-1, 28, 28, 1]) / 2 + 0.5,
+                                                  1.0) / 2 + 0.5)
+    # ssim_accuracy1 = tf.image.ssim(train_y / 2 + 0.5, new_image_tensor / 2 + 0.5, 1)
+    # a = sess.run(ssim_accuracy1, feed_dict={train_x: t.repeat(shape[0], axis=0), train_y: images})
+    ssim_accuracy = sess.run(ssim_accuracy2, feed_dict={train_x: t.repeat(shape[0], axis=0), train_y: images})
     new_image = sess.run(new_image_tensor, feed_dict={train_x: t.repeat(shape[0], axis=0), train_y: images})
     generate_images = (new_image / 2 + 0.5) * 255
     return generate_images
@@ -80,7 +85,7 @@ accuracy = compute_accuracy(sess, old_estimate_class, new_estimate_class)
 
 print('Attack Accuracy is %g' % accuracy)
 
-ssim_accuracy = fashion_mnist_ssim.get_ssim_value(test_images[0:1000], new_images)
+# ssim_accuracy = fashion_mnist_ssim.get_ssim_value(test_images[0:1000], new_images)
 print('ssim accuracy is %g' % ssim_accuracy)
 # for pic_class in b:
 #     print(pic_class)
