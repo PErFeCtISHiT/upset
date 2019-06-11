@@ -1,14 +1,13 @@
 import os
 import sys
 
+sys.path.append('..')
 import keras
 import numpy as np
 import tensorflow as tf
-from PIL import Image
-import loader
-from attack import fashion_mnist_ssim
+from util import loader
 from attack import load_target_model
-
+from attack import fashion_mnist_ssim
 type_argv = sys.argv[1]
 array = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 array[0][int(type_argv)] = 1
@@ -69,7 +68,6 @@ image_layer = tf.nn.relu(tf.layers.batch_normalization(tf.matmul(image_layer, i1
 image_layer = tf.tanh(tf.layers.batch_normalization(tf.matmul(image_layer, i2_upset) + i_bias2))
 image_layer = tf.reshape(image_layer, [-1, 28, 28])
 
-
 new_image = tf.maximum(tf.minimum(arg_s * output_layer + image_layer * arg_o + train_y, 1), -1)
 # new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)
 w1_n = tf.Variable(np.load('../model/w1.npy'), trainable=False)
@@ -80,11 +78,11 @@ model = load_target_model.get_model_output(new_image)
 lc = tf.reduce_mean(
     tf.nn.softmax_cross_entropy_with_logits_v2(labels=train_x, logits=model))
 # lf = arg_w * tf.reduce_mean(tf.square(new_image - train_y))
-# lf = - arg_w * tf.log(tf.clip_by_value(fashion_mnist_ssim.get_ssim_value_by_tensor(train_y, new_image), 1e-10, 1))
-lf = - arg_w * tf.reduce_mean(tf.log(
-    tf.clip_by_value(
-        tf.image.ssim(tf.reshape(train_y, [-1, 28, 28, 1]) / 2 + 0.5, tf.reshape(new_image, [-1, 28, 28, 1]) / 2 + 0.5,
-                      1.0) / 2 + 0.5, 1e-10, 1)))
+lf = - arg_w * tf.log(tf.clip_by_value(fashion_mnist_ssim.get_ssim_value_by_tensor(train_y, new_image), 1e-10, 1))
+#lf = - arg_w * tf.reduce_mean(tf.log(
+#    tf.clip_by_value(
+#        tf.image.ssim(tf.reshape(train_y, [-1, 28, 28, 1]) / 2 + 0.5, tf.reshape(new_image, [-1, 28, 28, 1]) / 2 + 0.5,
+#                      1.0) / 2 + 0.5, 1e-10, 1)))
 
 loss = lc + lf
 
