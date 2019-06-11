@@ -78,11 +78,11 @@ model = load_target_model.get_model_output(new_image)
 lc = tf.reduce_mean(
     tf.nn.softmax_cross_entropy_with_logits_v2(labels=train_x, logits=model))
 # lf = arg_w * tf.reduce_mean(tf.square(new_image - train_y))
-# lf = - arg_w * tf.log(tf.clip_by_value(fashion_mnist_ssim.get_ssim_value_by_tensor(train_y, new_image), 1e-10, 1))
-lf = - arg_w * tf.reduce_mean(tf.log(
-    tf.clip_by_value(
-        tf.image.ssim(tf.reshape(train_y, [-1, 28, 28, 1]) / 2 + 0.5, tf.reshape(new_image, [-1, 28, 28, 1]) / 2 + 0.5,
-                      1.0) / 2 + 0.5, 1e-10, 1)))
+lf = - arg_w * tf.log(tf.clip_by_value(fashion_mnist_ssim.get_ssim_value_by_tensor(train_y, new_image), 1e-10, 1))
+#lf = - arg_w * tf.reduce_mean(tf.log(
+#    tf.clip_by_value(
+#        tf.image.ssim(tf.reshape(train_y, [-1, 28, 28, 1]) / 2 + 0.5, tf.reshape(new_image, [-1, 28, 28, 1]) / 2 + 0.5,
+#                      1.0) / 2 + 0.5, 1e-10, 1)))
 
 loss = lc + lf
 
