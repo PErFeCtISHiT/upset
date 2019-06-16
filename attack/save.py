@@ -8,6 +8,7 @@ import tensorflow as tf
 from util import loader
 from attack import load_target_model
 from attack import fashion_mnist_ssim
+
 type_argv = sys.argv[1]
 array = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 array[0][int(type_argv)] = 1
@@ -47,7 +48,7 @@ train_y = tf.placeholder(tf.float32, shape=(None, 28, 28), name='y-input')
 
 arg_s = 0.7
 arg_w = 1
-arg_o = 0.5
+arg_o = 0.4
 
 current_layer = train_x
 w1_upset = tf.Variable(tf.random_normal([10, 128], stddev=2, mean=0))
@@ -59,27 +60,27 @@ current_layer = tf.tanh(tf.layers.batch_normalization(tf.matmul(current_layer, w
 current_layer = tf.reshape(current_layer, [-1, 28, 28])
 output_layer = current_layer
 
-image_layer = tf.reshape(train_y, [-1, 784])
-i1_upset = tf.Variable(tf.random_normal([784, 1024], stddev=2, mean=0))
-i_bias1 = tf.Variable(tf.constant(0.1, shape=[1024]))
-i2_upset = tf.Variable(tf.random_normal([1024, 784], stddev=2, mean=0))
-i_bias2 = tf.Variable(tf.constant(0.1, shape=[784]))
-image_layer = tf.nn.relu(tf.layers.batch_normalization(tf.matmul(image_layer, i1_upset) + i_bias1))
-image_layer = tf.tanh(tf.layers.batch_normalization(tf.matmul(image_layer, i2_upset) + i_bias2))
-image_layer = tf.reshape(image_layer, [-1, 28, 28])
-
-new_image = tf.maximum(tf.minimum(arg_s * output_layer + image_layer * arg_o + train_y, 1), -1)
-# new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)
+# image_layer = tf.reshape(train_y, [-1, 784])
+# i1_upset = tf.Variable(tf.random_normal([784, 1024], stddev=2, mean=0))
+# i_bias1 = tf.Variable(tf.constant(0.1, shape=[1024]))
+# i2_upset = tf.Variable(tf.random_normal([1024, 784], stddev=2, mean=0))
+# i_bias2 = tf.Variable(tf.constant(0.1, shape=[784]))
+# image_layer = tf.nn.relu(tf.layers.batch_normalization(tf.matmul(image_layer, i1_upset) + i_bias1))
+# image_layer = tf.tanh(tf.layers.batch_normalization(tf.matmul(image_layer, i2_upset) + i_bias2))
+# image_layer = tf.reshape(image_layer, [-1, 28, 28])
+#
+# new_image = tf.maximum(tf.minimum(arg_s * output_layer + image_layer * arg_o + train_y, 1), -1)
+new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)
 w1_n = tf.Variable(np.load('../model/w1.npy'), trainable=False)
 w2_n = tf.Variable(np.load('../model/w2.npy'), trainable=False)
 
-# model = get_model(w1_n, w2_n, new_image)
-model = load_target_model.get_model_output(new_image)
+model = get_model(w1_n, w2_n, new_image)
+# model = load_target_model.get_model_output(new_image)
 lc = tf.reduce_mean(
     tf.nn.softmax_cross_entropy_with_logits_v2(labels=train_x, logits=model))
 # lf = arg_w * tf.reduce_mean(tf.square(new_image - train_y))
 lf = - arg_w * tf.log(tf.clip_by_value(fashion_mnist_ssim.get_ssim_value_by_tensor(train_y, new_image), 1e-10, 1))
-#lf = - arg_w * tf.reduce_mean(tf.log(
+# lf = - arg_w * tf.reduce_mean(tf.log(
 #    tf.clip_by_value(
 #        tf.image.ssim(tf.reshape(train_y, [-1, 28, 28, 1]) / 2 + 0.5, tf.reshape(new_image, [-1, 28, 28, 1]) / 2 + 0.5,
 #                      1.0) / 2 + 0.5, 1e-10, 1)))

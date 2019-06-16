@@ -9,7 +9,7 @@ w2_upset = tf.Variable(np.load('../model/w2_u_1.npy'), trainable=False)
 bias1 = tf.Variable(tf.constant(0.1, shape=[128]))
 bias2 = tf.Variable(tf.constant(0.1, shape=[784]))
 
-arg_s = 0.5
+arg_s = 1
 train_x = tf.placeholder(tf.float32, shape=(None, 10), name='x-input')
 train_y = tf.placeholder(tf.float32, shape=(None, 28, 28), name='y-input')
 
