@@ -71,8 +71,8 @@ output_layer = current_layer
 #
 # new_image = tf.maximum(tf.minimum(arg_s * output_layer + image_layer * arg_o + train_y, 1), -1)
 new_image = tf.maximum(tf.minimum(arg_s * output_layer + train_y, 1), -1)
-w1_n = tf.Variable(np.load('../model/w1.npy'), trainable=False)
-w2_n = tf.Variable(np.load('../model/w2.npy'), trainable=False)
+w1_n = tf.Variable(np.load('../model/nw1.npy'), trainable=False)
+w2_n = tf.Variable(np.load('../model/nw2.npy'), trainable=False)
 
 model = get_model(w1_n, w2_n, new_image)
 # model = load_target_model.get_model_output(new_image)
