@@ -1,17 +1,19 @@
 import sys
 import numpy as np
 import tensorflow as tf
+
 sys.path.append('..')
 import keras
 from util import loader
 import os
+
 w1_upset = tf.Variable(np.load('../model/w1_u_1.npy'), trainable=False)
 w2_upset = tf.Variable(np.load('../model/w2_u_1.npy'), trainable=False)
 
 bias1 = tf.Variable(tf.constant(0.1, shape=[128]))
 bias2 = tf.Variable(tf.constant(0.1, shape=[784]))
 
-arg_s = 2
+arg_s = 1.5
 train_x = tf.placeholder(tf.float32, shape=(None, 10), name='x-input')
 train_y = tf.placeholder(tf.float32, shape=(None, 28, 28), name='y-input')
 
@@ -43,6 +45,7 @@ def get_model(w1, w2, x):
 def aiTest(images, shape):
     global new_image
     global ssim_accuracy
+    images = images.reshape(-1, 28, 28)
     images = (images / 255.0 - 0.5) * 2
     # for i in range(10):
     #     t = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
@@ -57,13 +60,14 @@ def aiTest(images, shape):
     ssim_accuracy = sess.run(ssim_accuracy2, feed_dict={train_x: t.repeat(shape[0], axis=0), train_y: images})
     new_image = sess.run(new_image_tensor, feed_dict={train_x: t.repeat(shape[0], axis=0), train_y: images})
     generate_images = (new_image / 2 + 0.5) * 255
+    generate_images = generate_images.reshape(-1, 28, 28, 1)
     return generate_images
 
 
 fashion_mnist = keras.datasets.fashion_mnist
 (train_images, train_labels), (test_images, test_labels) = loader.load_data()
 
-new_images = aiTest(test_images[0:1000], [1000, 28, 28, 1])
+new_images = aiTest(test_images[1000:2000], [1000, 28, 28, 1])
 
 w1_n = tf.Variable(np.load('../model/w1.npy'), trainable=False)
 w2_n = tf.Variable(np.load('../model/w2.npy'), trainable=False)
@@ -73,8 +77,8 @@ sess.run(init_op)
 
 target_train_x = tf.placeholder(tf.float32, shape=(None, 28, 28))
 old_model = get_model(w1_n, w2_n, target_train_x)
-
-old_estimate_class = sess.run(old_model, feed_dict={target_train_x: test_images[0:1000]})
+new_images = new_images.reshape(-1, 28, 28)
+old_estimate_class = sess.run(old_model, feed_dict={target_train_x: test_images[1000:2000]})
 new_estimate_class = sess.run(old_model, feed_dict={target_train_x: new_images})
 
 # for index in range(len(old_estimate_class)):
@@ -90,8 +94,8 @@ print('ssim accuracy is %g' % ssim_accuracy)
 # for pic_class in b:
 #     print(pic_class)
 
-if not os.path.isdir('../image/test'):
-    os.mkdir('../image/test')
+# if not os.path.isdir('../image/test'):
+#     os.mkdir('../image/test')
 # for j in range(len(new_images)):
 #     ima = new_images[j]
 #     im = Image.fromarray(ima)
